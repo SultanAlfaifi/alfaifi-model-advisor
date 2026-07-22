@@ -8,7 +8,7 @@ import tempfile
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -120,7 +120,7 @@ class OllamaOfficialSource:
         return values
 
     def fetch_all(self) -> tuple[list[ModelCandidate], list[str]]:
-        checked_at = datetime.now(UTC).isoformat()
+        checked_at = datetime.now(timezone.utc).isoformat()
         models: list[ModelCandidate] = []
         errors: list[str] = []
         with ThreadPoolExecutor(max_workers=min(5, len(FAMILY_PROFILES))) as pool:
@@ -179,8 +179,11 @@ class CatalogService:
 
     def load(self, *, offline: bool = False, force_refresh: bool = False) -> list[ModelCandidate]:
         cached, cache_time = self._read_cache()
-        now = datetime.now(UTC)
-        fresh = cache_time is not None and now - cache_time.astimezone(UTC) < CACHE_TTL
+        now = datetime.now(timezone.utc)
+        fresh = (
+            cache_time is not None
+            and now - cache_time.astimezone(timezone.utc) < CACHE_TTL
+        )
 
         if offline:
             self.source_state = "cache" if cached else "seed"
