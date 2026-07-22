@@ -62,6 +62,10 @@ flowchart LR
 Hardware and answers stay on the computer. Scanning and recommendation do not
 download models or modify the system.
 
+For formulas, weights, compatibility filters, confidence rules, and a complete
+worked example, read the
+[Recommendation Methodology](docs/RECOMMENDATION_METHODOLOGY.md).
+
 ## Install on Windows
 
 ### Recommended: graphical installer
@@ -188,6 +192,7 @@ request with tests.
 - [Contributing guide](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security policy](SECURITY.md)
+- [Recommendation methodology](docs/RECOMMENDATION_METHODOLOGY.md)
 - [Changelog](CHANGELOG.md)
 - [Trademark policy](TRADEMARKS.md)
 

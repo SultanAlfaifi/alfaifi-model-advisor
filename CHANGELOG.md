@@ -6,6 +6,11 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Detailed recommendation methodology covering discovery, compatibility
+  filters, memory estimates, score weights, confidence, and limitations.
+
 ## [0.2.0] - 2026-07-22
 
 ### Added
