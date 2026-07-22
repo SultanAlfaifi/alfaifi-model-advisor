@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    name: Build and publish Windows release
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package and build tools
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build portable executable
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --onefile --console `
+            --name alfaifi --icon .\assets\alfaifi.ico `
+            --version-file .\version_info.txt .\launcher.py
+
+      - name: Stage installer inputs and portable package
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $portable = Join-Path $PWD "release\portable"
+          New-Item -ItemType Directory -Path $portable -Force | Out-Null
+
+          Copy-Item -LiteralPath .\assets\alfaifi.ico -Destination .\dist\alfaifi.ico
+          Copy-Item -LiteralPath .\README.md, .\LICENSE, .\NOTICE, .\TRADEMARKS.md -Destination .\dist
+
+          Copy-Item -LiteralPath .\dist\alfaifi.exe, .\dist\alfaifi.ico -Destination $portable
+          Copy-Item -LiteralPath .\README.md, .\LICENSE, .\NOTICE, .\TRADEMARKS.md -Destination $portable
+          Copy-Item -LiteralPath .\scripts\Install-Alfaifi.ps1, .\scripts\Uninstall-Alfaifi.ps1 -Destination $portable
+
+          Compress-Archive -Path "$portable\*" -DestinationPath ".\release\AlfaifiModelAdvisor-$version-Windows-x64.zip"
+          git archive --format=zip --output=".\release\AlfaifiModelAdvisor-$version-Source.zip" HEAD
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build graphical installer
+        shell: pwsh
+        run: |
+          $compiler = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path -LiteralPath $compiler)) {
+            throw "Inno Setup compiler was not found at $compiler"
+          }
+          & $compiler .\installer\AlfaifiModelAdvisor.iss
+
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          Copy-Item -LiteralPath ".\dist\AlfaifiModelAdvisor-Setup-$version.exe" -Destination .\release
+
+      - name: Create checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem -LiteralPath .\release -File |
+            Sort-Object Name |
+            ForEach-Object {
+              $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant()
+              "$hash  $($_.Name)"
+            } | Set-Content -LiteralPath .\release\SHA256SUMS.txt -Encoding ascii
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          gh release create "${{ github.ref_name }}" .\release\* `
+            --verify-tag `
+            --title "Alfaifi Model Advisor v$version" `
+            --generate-notes

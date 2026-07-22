@@ -66,7 +66,7 @@ download models or modify the system.
 
 ### Recommended: graphical installer
 
-Download `AlfaifiModelAdvisor-Setup-0.1.0.exe` from the
+Download `AlfaifiModelAdvisor-Setup-0.2.0.exe` from the
 [latest release](https://github.com/SultanAlfaifi/alfaifi-model-advisor/releases/latest).
 The installer works for the current user, adds `alfaifi` to the user PATH, and
 does not require administrator privileges.
@@ -88,7 +88,7 @@ Download the Windows ZIP, extract it, and run:
 The package also includes `Install-Alfaifi.ps1` and `Uninstall-Alfaifi.ps1`.
 
 > [!IMPORTANT]
-> Version 0.1.0 is an unsigned preview. Windows SmartScreen may display an
+> Version 0.2.0 is unsigned. Windows SmartScreen may display an
 > unrecognized-publisher warning. Verify downloads with the published SHA-256
 > checksums. Code signing is planned before the first stable release.
 
