@@ -161,6 +161,11 @@ def main(argv: list[str] | None = None) -> int:
         ui.show_hardware(hardware)
         needs = ui.ask_needs()
         if args.offline:
+            ui.section(
+                3,
+                "OFFLINE MODEL CACHE",
+                "Using the last trusted cache or the bundled fallback without network access.",
+            )
             with console.status("[cyan]Loading the trusted offline catalog...[/cyan]", spinner="dots12"):
                 models = catalog.load(offline=True)
         else:
