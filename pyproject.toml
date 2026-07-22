@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alfaifi-model-advisor"
-version = "0.1.0"
+version = "0.2.0.dev1"
 description = "Trusted local AI model advisor by Sultan Alfaifi"
 readme = "README.md"
 requires-python = ">=3.10"

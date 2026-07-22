@@ -1,7 +1,8 @@
 import unittest
 
 from alfaifi_model_advisor.models import GpuInfo, HardwareProfile, OllamaInfo, UserNeeds
-from alfaifi_model_advisor.profiles import seed_catalog
+from alfaifi_model_advisor.catalog import parse_library_profiles
+from alfaifi_model_advisor.profiles import build_candidate_from_profile, seed_catalog
 from alfaifi_model_advisor.recommender import RecommendationEngine
 
 
@@ -94,6 +95,30 @@ class RecommenderTests(unittest.TestCase):
     def test_insufficient_disk_excludes_large_local_models(self):
         results, _ = self.engine.recommend(self.models, hardware(64, 24, disk=5), needs(), limit=20)
         self.assertTrue(all((item.model.size_gb or 0) <= 3 for item in results))
+
+    def test_unknown_dynamic_license_is_excluded_when_permissive_is_required(self):
+        page = """
+        <a href="/library/example">
+          <p class="max-w-lg">A general model.</p>
+          <div class="flex flex-wrap space-x-2"><span>7b</span></div>
+        </a>
+        """
+        profile = parse_library_profiles(page)[0][0]
+        model = build_candidate_from_profile(
+            profile,
+            "7b",
+            4.5,
+            32,
+            "local",
+            source_state="live",
+        )
+        results, excluded = self.engine.recommend(
+            [model],
+            hardware(32, 8),
+            needs(permissive_license_only=True),
+        )
+        self.assertEqual(results, [])
+        self.assertEqual(excluded[0][1], "The license does not match the selected preference")
 
 
 if __name__ == "__main__":

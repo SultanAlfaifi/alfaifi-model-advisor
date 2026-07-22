@@ -128,6 +128,15 @@ class RecommendationEngine:
                 excluded.append((model, warnings[0]))
                 continue
 
+            dynamically_discovered = any(
+                note.startswith("Discovered dynamically") for note in model.notes
+            )
+            license_unverified = model.license_name.startswith("License not indexed")
+            if license_unverified:
+                warnings.append(
+                    "The official Ollama entry does not expose a machine-readable license; review the model page before use."
+                )
+
             task = _task_score(model, needs.goals)
             language = _language_score(model, needs.language)
             speed = _speed_score(model, mode)
@@ -167,6 +176,10 @@ class RecommendationEngine:
                 + trust_points,
                 1,
             )
+            if dynamically_discovered:
+                score = round(score - 2.0, 1)
+            if license_unverified:
+                score = round(score - 1.5, 1)
             reasons = [
                 f"Task fit: {task:.1f}/5 for the selected goals.",
                 f"Language fit: {language:.1f}/5.",
@@ -177,7 +190,16 @@ class RecommendationEngine:
                     "cloud": "Performance does not depend on local hardware, but an internet connection is required.",
                 }[mode],
             ]
-            confidence = "High" if model.source_state == "live" and (mode == "cloud" or hardware.best_gpu) else "Medium"
+            if dynamically_discovered or license_unverified:
+                reasons.append("The family was discovered from the live official Ollama catalog and ranked conservatively.")
+            confidence = (
+                "High"
+                if model.source_state == "live"
+                and not dynamically_discovered
+                and not license_unverified
+                and (mode == "cloud" or hardware.best_gpu)
+                else "Medium"
+            )
             recommendations.append(
                 Recommendation(
                     model=model,

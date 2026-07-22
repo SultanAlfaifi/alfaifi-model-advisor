@@ -37,6 +37,8 @@ transparent scoring, trusted sources, offline behavior, and JSON output.
   and the local Ollama installation.
 - Asks about experience, goals, Arabic or English usage, speed, quality,
   context size, vision, tool calling, privacy, and license preferences.
+- Reads the complete official Ollama library after the interview, then verifies
+  exact sizes and context windows for the most relevant families.
 - Scores hardware fit, task fit, language fit, and execution mode.
 - Recommends local Ollama models and clearly labels optional cloud models.
 - Refreshes model metadata only from allowlisted official HTTPS sources.
@@ -106,17 +108,21 @@ alfaifi --json scan             Return machine-readable output
 alfaifi about                   Show project and creator details
 ```
 
-## Supported model families
+## Dynamic model discovery
 
-The initial trusted catalog includes official Ollama entries for:
+The advisor scans every family currently listed in the official Ollama library
+after it knows the user's answers. It uses the family cards to build a relevant
+shortlist, then retrieves exact download sizes and context windows for those
+finalists before scoring runnable variants.
 
-- Qwen 3.5
-- Qwen 3 Coder
-- Google Gemma 4
-- Moonshot AI Kimi K2.5 and K2.6 cloud options
+Curated profiles for Qwen, Gemma, and Kimi retain richer task, language, and
+license metadata. Other official Ollama families are discovered dynamically and
+ranked conservatively. If a license cannot be verified from the official page,
+the result says so instead of claiming that the model is open source. Selecting
+the permissive-license filter excludes models whose license is not verified.
 
-The catalog is intentionally conservative. Unknown model layouts are not
-guessed or scored as if their memory requirements were known.
+This two-stage design considers the changing official catalog without sending
+hundreds of unnecessary detail requests or guessing unknown hardware data.
 
 ## Privacy and security
 
@@ -166,7 +172,8 @@ The reproducible installer definition is available at
 ## Roadmap
 
 - [ ] Digitally signed Windows releases.
-- [ ] Automated catalog adapters for more official model providers.
+- [x] Dynamic discovery across the complete official Ollama library.
+- [ ] Additional official model-provider adapters beyond Ollama.
 - [ ] AMD and Intel GPU memory detection improvements.
 - [ ] Linux and macOS support.
 - [ ] Benchmark-backed recommendation calibration.

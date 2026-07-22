@@ -82,27 +82,47 @@ def main(argv: list[str] | None = None) -> int:
                 ui.footer()
             return 0
 
-        force = args.command == "update"
-        models = catalog.load(offline=args.offline, force_refresh=force)
-
         if args.command == "update":
             ui.header()
-            ui.show_catalog_status(catalog.source_state, catalog.checked_at, catalog.last_errors)
+            with ui.discovery_wait(personalized=False) as progress:
+                models = catalog.load(
+                    offline=args.offline,
+                    force_refresh=True,
+                    progress=progress,
+                )
+            ui.show_catalog_status(
+                catalog.source_state,
+                catalog.checked_at,
+                catalog.last_errors,
+                catalog.discovered_family_count,
+                catalog.verified_family_count,
+                len(models),
+            )
             ui.show_model_list(models)
             ui.footer()
             return 0 if catalog.source_state in {"live", "cache"} else 2
 
         if args.command == "list":
+            models = catalog.load(offline=args.offline)
             if args.json:
                 print(json.dumps([model.to_dict() for model in models], ensure_ascii=False, indent=2))
             else:
                 ui.header()
-                ui.show_catalog_status(catalog.source_state, catalog.checked_at, catalog.last_errors)
+                ui.show_catalog_status(
+                    catalog.source_state,
+                    catalog.checked_at,
+                    catalog.last_errors,
+                    catalog.discovered_family_count,
+                    catalog.verified_family_count,
+                    len(models),
+                )
                 ui.show_model_list(models)
                 ui.footer()
             return 0
 
         if args.command in {"explain", "install", "open"}:
+            with console.status("[cyan]Loading the trusted model catalog...[/cyan]", spinner="dots12"):
+                models = catalog.load(offline=args.offline)
             model = _find(models, args.model)
             if args.command == "explain":
                 if args.json:
@@ -136,11 +156,29 @@ def main(argv: list[str] | None = None) -> int:
             return code
 
         ui.header()
-        ui.show_catalog_status(catalog.source_state, catalog.checked_at, catalog.last_errors)
         with console.status("[cyan]Inspecting hardware...[/cyan]"):
             hardware = inspector.scan()
         ui.show_hardware(hardware)
         needs = ui.ask_needs()
+        if args.offline:
+            with console.status("[cyan]Loading the trusted offline catalog...[/cyan]", spinner="dots12"):
+                models = catalog.load(offline=True)
+        else:
+            with ui.discovery_wait() as progress:
+                models = catalog.load(
+                    force_refresh=True,
+                    needs=needs,
+                    hardware=hardware,
+                    progress=progress,
+                )
+        ui.show_catalog_status(
+            catalog.source_state,
+            catalog.checked_at,
+            catalog.last_errors,
+            catalog.discovered_family_count,
+            catalog.verified_family_count,
+            len(models),
+        )
         recommendations, _ = RecommendationEngine().recommend(models, hardware, needs)
         ui.show_recommendations(recommendations)
         ui.footer()

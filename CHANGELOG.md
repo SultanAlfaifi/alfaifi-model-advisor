@@ -4,6 +4,23 @@ All notable changes to Alfaifi Model Advisor are documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Post-interview discovery across the complete official Ollama library.
+- Goal-aware shortlisting and live verification of relevant family tags.
+- Conservative profiles for newly discovered official families.
+- Animated model-discovery waiting screen with visible progress messages.
+
+### Changed
+
+- Redesigned terminal header, numbered workflow sections, hardware card, result
+  hierarchy, and project footer.
+- Project links now display their complete copyable URLs in every terminal.
+- Unknown licenses are labeled explicitly and excluded by the permissive-only
+  filter.
+
 ## [0.1.0] - 2026-07-22
 
 ### Added

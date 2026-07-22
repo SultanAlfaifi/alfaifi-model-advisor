@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+from datetime import datetime
+from typing import Callable, Iterator
+
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -13,6 +17,7 @@ from .models import HardwareProfile, ModelCandidate, Recommendation, UserNeeds
 BRAND = "ALFAIFI MODEL ADVISOR"
 X_URL = "https://x.com/SultAlfaifi"
 LINKEDIN_URL = "https://www.linkedin.com/in/alfaifi-sultan/"
+GITHUB_URL = "https://github.com/SultanAlfaifi/alfaifi-model-advisor"
 
 EXPERIENCE = {1: "beginner", 2: "intermediate", 3: "advanced"}
 GOALS = {
@@ -44,23 +49,76 @@ class AppUI:
 
     def header(self) -> None:
         title = Text()
-        title.append("  ALFAIFI  ", style="bold white on #1d4ed8")
-        title.append(" MODEL ADVISOR ", style="bold cyan")
-        subtitle = Text("Find the right trusted open model for your device and goals", style="white")
-        body = Text.assemble(title, "\n", subtitle, "\n", Text("Created by Sultan Alfaifi", style="dim"))
-        self.console.print(Panel(body, border_style="bright_blue", padding=(1, 3)))
+        title.append("  ALFAIFI  ", style="bold white on #2563eb")
+        title.append(" MODEL ADVISOR ", style="bold #67e8f9")
+        subtitle = Text("Your hardware. Your goals. One confident model choice.", style="bold white")
+        trust_line = Text("PRIVATE  •  EXPLAINABLE  •  OFFICIAL SOURCES  •  NO AUTO-DOWNLOADS", style="dim cyan")
+        body = Text.assemble(
+            title,
+            "\n\n",
+            subtitle,
+            "\n",
+            trust_line,
+            "\n\n",
+            Text("Created by Sultan Alfaifi", style="dim"),
+        )
+        self.console.print(
+            Panel(body, border_style="#38bdf8", box=box.DOUBLE, padding=(1, 3))
+        )
+
+    def section(self, number: int, title: str, subtitle: str) -> None:
+        heading = Text()
+        heading.append(f" {number:02d} ", style="bold white on #2563eb")
+        heading.append(f"  {title}", style="bold bright_cyan")
+        self.console.print()
+        self.console.print(heading)
+        self.console.print(f"[dim]{subtitle}[/dim]")
+
+    @contextmanager
+    def discovery_wait(self, *, personalized: bool = True) -> Iterator[Callable[[str], None]]:
+        self.section(
+            3,
+            "LIVE MODEL DISCOVERY",
+            (
+                "Searching the official catalog only after your answers are known."
+                if personalized
+                else "Refreshing model details from the official Ollama library."
+            ),
+        )
+        self.console.print(
+            Panel(
+                "[bold]The Model Compass is exploring Ollama...[/bold]\n"
+                "Every official family is scanned, relevant variants are verified, and nothing is downloaded.",
+                border_style="cyan",
+                box=box.ROUNDED,
+                padding=(1, 2),
+            )
+        )
+        with self.console.status(
+            "[bold cyan]Warming up the model compass...[/bold cyan]",
+            spinner="dots12",
+            spinner_style="bright_cyan",
+        ) as status:
+            yield lambda message: status.update(f"[bold cyan]{message}[/bold cyan]")
 
     def footer(self) -> None:
         links = Text()
-        links.append("Sultan Alfaifi  ", style="bold")
-        links.append("X", style=f"link {X_URL} cyan underline")
-        links.append("  •  ", style="dim")
-        links.append("LinkedIn", style=f"link {LINKEDIN_URL} blue underline")
+        links.append("Sultan Alfaifi\n", style="bold white")
+        links.append("X:        ", style="dim")
+        links.append(X_URL, style=f"link {X_URL} cyan underline")
+        links.append("\nLinkedIn: ", style="dim")
+        links.append(LINKEDIN_URL, style=f"link {LINKEDIN_URL} blue underline")
+        links.append("\nGitHub:   ", style="dim")
+        links.append(GITHUB_URL, style=f"link {GITHUB_URL} bright_blue underline")
+        links.append("\n\nTip: use Ctrl+Click in Windows Terminal. The full URLs remain copyable everywhere.", style="dim")
         links.append("\nCopyright © 2026 Sultan Alfaifi · Apache-2.0", style="dim")
-        self.console.print(Panel(links, border_style="dim blue", padding=(0, 2)))
+        self.console.print(
+            Panel(links, title="PROJECT LINKS", border_style="dim blue", box=box.ROUNDED, padding=(1, 2))
+        )
 
     def show_hardware(self, hardware: HardwareProfile) -> None:
-        table = Table(title="Hardware scan", box=box.ROUNDED, border_style="blue", show_header=False)
+        self.section(1, "DEVICE PROFILE", "A private hardware snapshot used only on this computer.")
+        table = Table(box=box.ROUNDED, border_style="blue", show_header=False, padding=(0, 1))
         table.add_column("Item", style="bold cyan")
         table.add_column("Value")
         table.add_row("Operating system", hardware.os_name)
@@ -74,7 +132,8 @@ class AppUI:
             table.add_row("GPU", "No discrete GPU with reliable dedicated-memory data was detected")
         table.add_row("Model storage", f"{hardware.free_disk_gb} GB free at {hardware.model_path}")
         ollama = (hardware.ollama.version or "Installed") if hardware.ollama.installed else "Not installed"
-        table.add_row("Ollama", ollama)
+        ollama_style = "[green]READY[/green]" if hardware.ollama.installed else "[yellow]NOT INSTALLED[/yellow]"
+        table.add_row("Ollama", f"{ollama_style}  {ollama}")
         self.console.print(table)
 
     def _choice(self, title: str, choices: dict[int, str], default: int = 1) -> int:
@@ -88,6 +147,7 @@ class AppUI:
             self.console.print("[red]Choose a number shown in the list.[/red]")
 
     def ask_needs(self) -> UserNeeds:
+        self.section(2, "YOUR IDEAL MODEL", "A short interview turns preferences into measurable filters.")
         experience_choice = self._choice(
             "What is your experience level?",
             {1: "Beginner", 2: "Intermediate", 3: "Advanced"},
@@ -144,14 +204,35 @@ class AppUI:
             permissive_license_only=permissive,
         )
 
-    def show_catalog_status(self, state: str, checked_at: str | None, errors: list[str]) -> None:
+    def show_catalog_status(
+        self,
+        state: str,
+        checked_at: str | None,
+        errors: list[str],
+        discovered_families: int = 0,
+        verified_families: int = 0,
+        candidate_count: int = 0,
+    ) -> None:
         label = {"live": "live official sources", "cache": "local cache", "seed": "trusted fallback catalog"}.get(state, state)
-        message = f"Model data: {label}" + (f" — last checked {checked_at}" if checked_at else "")
+        checked_label = checked_at
+        if checked_at:
+            try:
+                checked_label = datetime.fromisoformat(checked_at).astimezone().strftime("%Y-%m-%d %H:%M %Z")
+            except ValueError:
+                pass
+        message = f"Model data: {label}" + (f" — checked {checked_label}" if checked_label else "")
         self.console.print(f"[dim]{message}[/dim]")
+        if discovered_families:
+            self.console.print(
+                f"[dim]Scanned {discovered_families} official families; "
+                f"verified {verified_families} relevant families; "
+                f"compared {candidate_count} runnable variants.[/dim]"
+            )
         if errors:
             self.console.print(f"[yellow]{len(errors)} source(s) could not be refreshed; trusted cached data was used instead.[/yellow]")
 
     def show_recommendations(self, recommendations: list[Recommendation]) -> None:
+        self.section(4, "YOUR SHORTLIST", "Ranked for fit, usefulness, trust, and practical runtime behavior.")
         if not recommendations:
             self.console.print(Panel("No model satisfies every selected requirement. Try allowing cloud models or relaxing image and tool requirements.", border_style="red"))
             return
@@ -176,7 +257,7 @@ class AppUI:
             lines.append("Official page: ")
             lines.append(model.official_url, style=f"link {model.official_url} blue underline")
             if model.install_command:
-                lines.append(f"\nInstall: {model.install_command}", style="bold")
+                lines.append(f"\nCopy to install: {model.install_command}", style="bold")
             title = ranks[index] if index < len(ranks) else f"CHOICE {index + 1}"
             self.console.print(Panel(lines, title=title, border_style="bright_blue" if index == 0 else "blue"))
 
