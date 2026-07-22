@@ -1,5 +1,5 @@
 #define AppName "Alfaifi Model Advisor"
-#define AppVersion "0.1.0"
+#define AppVersion "0.2.0"
 #define AppPublisher "Sultan Alfaifi"
 #define AppURL "https://x.com/SultAlfaifi"
 #define ProjectRoot AddBackslash(SourcePath) + ".."
@@ -37,7 +37,7 @@ SolidCompression=yes
 WizardStyle=modern
 ChangesEnvironment=yes
 CloseApplications=no
-VersionInfoVersion=0.1.0.0
+VersionInfoVersion=0.2.0.0
 VersionInfoCompany={#AppPublisher}
 VersionInfoDescription={#AppName} installer
 VersionInfoCopyright=Copyright (c) 2026 Sultan Alfaifi. Licensed under Apache-2.0.
