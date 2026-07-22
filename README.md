@@ -21,6 +21,12 @@
   <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white">
 </p>
 
+<p align="center">
+  <a href="https://github.com/SultanAlfaifi/alfaifi-model-advisor/releases/latest"><strong>Download for Windows</strong></a>
+  &nbsp;•&nbsp;
+  <a href="docs/RECOMMENDATION_METHODOLOGY.md"><strong>How scoring works</strong></a>
+</p>
+
 ## Why this exists
 
 Choosing a local model is harder than comparing parameter counts. GPU memory,
