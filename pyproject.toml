@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alfaifi-model-advisor"
+version = "0.1.0"
+description = "Trusted local AI model advisor by Sultan Alfaifi"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+keywords = ["ollama", "local-ai", "llm", "hardware", "model-recommendation"]
+dependencies = [
+  "psutil>=6.0,<8",
+  "rich>=13.9,<15",
+]
+authors = [
+  { name = "Sultan Alfaifi" }
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pyinstaller>=6.21,<7",
+]
+
+[project.urls]
+Homepage = "https://github.com/SultanAlfaifi/alfaifi-model-advisor"
+Repository = "https://github.com/SultanAlfaifi/alfaifi-model-advisor"
+Issues = "https://github.com/SultanAlfaifi/alfaifi-model-advisor/issues"
+Changelog = "https://github.com/SultanAlfaifi/alfaifi-model-advisor/blob/main/CHANGELOG.md"
+
+[project.scripts]
+alfaifi = "alfaifi_model_advisor.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

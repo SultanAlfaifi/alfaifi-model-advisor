@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/SultanAlfaifi/alfaifi-model-advisor/security/advisories/new
+    about: Report security issues privately. Do not open a public issue.
+  - name: Support guide
+    url: https://github.com/SultanAlfaifi/alfaifi-model-advisor/blob/main/SUPPORT.md
+    about: Read troubleshooting and support guidance before opening an issue.
