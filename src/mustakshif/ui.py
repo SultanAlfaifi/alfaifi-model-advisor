@@ -14,10 +14,10 @@ from rich.text import Text
 from .models import HardwareProfile, ModelCandidate, Recommendation, UserNeeds
 
 
-BRAND = "ALFAIFI MODEL ADVISOR"
+BRAND = "MUSTAKSHIF"
 X_URL = "https://x.com/SultAlfaifi"
 LINKEDIN_URL = "https://www.linkedin.com/in/alfaifi-sultan/"
-GITHUB_URL = "https://github.com/SultanAlfaifi/alfaifi-model-advisor"
+GITHUB_URL = "https://github.com/SultanAlfaifi/mustakshif"
 
 EXPERIENCE = {1: "beginner", 2: "intermediate", 3: "advanced"}
 GOALS = {
@@ -49,9 +49,8 @@ class AppUI:
 
     def header(self) -> None:
         title = Text()
-        title.append("  ALFAIFI  ", style="bold white on #2563eb")
-        title.append(" MODEL ADVISOR ", style="bold #67e8f9")
-        subtitle = Text("Your hardware. Your goals. One confident model choice.", style="bold white")
+        title.append("  MUSTAKSHIF  ", style="bold white on #2563eb")
+        subtitle = Text("Explore the models. Discover the right fit.", style="bold white")
         trust_line = Text("PRIVATE  •  EXPLAINABLE  •  OFFICIAL SOURCES  •  NO AUTO-DOWNLOADS", style="dim cyan")
         body = Text.assemble(
             title,
@@ -87,7 +86,7 @@ class AppUI:
         )
         self.console.print(
             Panel(
-                "[bold]The Model Compass is exploring Ollama...[/bold]\n"
+                "[bold]Mustakshif is exploring Ollama...[/bold]\n"
                 "Every official family is scanned, relevant variants are verified, and nothing is downloaded.",
                 border_style="cyan",
                 box=box.ROUNDED,
@@ -95,7 +94,7 @@ class AppUI:
             )
         )
         with self.console.status(
-            "[bold cyan]Warming up the model compass...[/bold cyan]",
+            "[bold cyan]Preparing the model explorer...[/bold cyan]",
             spinner="dots12",
             spinner_style="bright_cyan",
         ) as status:
@@ -213,7 +212,13 @@ class AppUI:
         verified_families: int = 0,
         candidate_count: int = 0,
     ) -> None:
-        label = {"live": "live official sources", "cache": "local cache", "seed": "trusted fallback catalog"}.get(state, state)
+        label = {
+            "live": "live official sources",
+            "index": "automatic daily catalog index",
+            "cache": "local cache",
+            "bundled": "trusted catalog bundled with the app",
+            "seed": "trusted fallback catalog",
+        }.get(state, state)
         checked_label = checked_at
         if checked_at:
             try:
@@ -225,7 +230,7 @@ class AppUI:
         if discovered_families:
             self.console.print(
                 f"[dim]Scanned {discovered_families} official families; "
-                f"verified {verified_families} relevant families; "
+                f"verified {verified_families} runnable families; "
                 f"compared {candidate_count} runnable variants.[/dim]"
             )
         if errors:
@@ -237,12 +242,24 @@ class AppUI:
             self.console.print(Panel("No model satisfies every selected requirement. Try allowing cloud models or relaxing image and tool requirements.", border_style="red"))
             return
 
-        ranks = ["BEST MATCH", "SECOND CHOICE", "THIRD CHOICE"]
+        category_labels = {
+            "best_overall": "BEST OVERALL",
+            "best_quality": "HIGHEST QUALITY",
+            "fastest": "FASTEST",
+            "lightest": "LIGHTEST",
+            "most_popular": "MOST POPULAR",
+        }
         for index, item in enumerate(recommendations):
             model = item.model
             lines = Text()
             lines.append(f"{model.display_name}\n", style="bold bright_cyan")
             lines.append(f"Score: {item.score}/100   Confidence: {item.confidence}\n")
+            if item.score_breakdown:
+                parts = " · ".join(
+                    f"{name.title()} {value:.1f}"
+                    for name, value in item.score_breakdown.items()
+                )
+                lines.append(f"{parts}\n", style="dim")
             lines.append(f"Execution: {MODE_LABELS[item.hardware_mode]}   Starting context: {item.recommended_context_k}K\n")
             if model.size_gb is not None:
                 lines.append(f"Download: {model.size_gb} GB")
@@ -258,7 +275,7 @@ class AppUI:
             lines.append(model.official_url, style=f"link {model.official_url} blue underline")
             if model.install_command:
                 lines.append(f"\nCopy to install: {model.install_command}", style="bold")
-            title = ranks[index] if index < len(ranks) else f"CHOICE {index + 1}"
+            title = category_labels.get(item.category, f"CHOICE {index + 1}")
             self.console.print(Panel(lines, title=title, border_style="bright_blue" if index == 0 else "blue"))
 
     def show_model_list(self, models: list[ModelCandidate]) -> None:
@@ -282,7 +299,7 @@ class AppUI:
 
     def about(self) -> None:
         body = Text()
-        body.append("Alfaifi Model Advisor\n", style="bold bright_cyan")
+        body.append("Mustakshif\n", style="bold bright_cyan")
         body.append("A local-first tool for matching trusted open AI models to hardware and user goals.\n\n")
         body.append("Created by Sultan Alfaifi\n", style="bold")
         body.append(X_URL + "\n", style=f"link {X_URL} cyan underline")

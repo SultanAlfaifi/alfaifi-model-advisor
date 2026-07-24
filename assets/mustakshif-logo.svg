@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Mustakshif discovery mark</title>
+  <desc id="desc">Two open scanning rings converge on a discovery spark.</desc>
+
+  <rect width="1024" height="1024" rx="208" fill="#071226"/>
+
+  <g fill="none" stroke-linecap="butt">
+    <circle
+      cx="512"
+      cy="512"
+      r="300"
+      stroke="#F7F3E8"
+      stroke-width="72"
+      stroke-dasharray="692 250"
+      transform="rotate(-47 512 512)"
+    />
+    <circle
+      cx="512"
+      cy="512"
+      r="174"
+      stroke="#38BDF8"
+      stroke-width="54"
+      stroke-dasharray="400 147"
+      transform="rotate(43 512 512)"
+    />
+  </g>
+
+  <path
+    d="M512 420 535 489 604 512 535 535 512 604 489 535 420 512 489 489Z"
+    fill="#F7F3E8"
+  />
+</svg>

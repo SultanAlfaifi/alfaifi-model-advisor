@@ -1,7 +1,7 @@
-#define AppName "Alfaifi Model Advisor"
-#define AppVersion "0.2.0"
+#define AppName "Mustakshif"
+#define AppVersion "0.4.0"
 #define AppPublisher "Sultan Alfaifi"
-#define AppURL "https://x.com/SultAlfaifi"
+#define AppURL "https://github.com/SultanAlfaifi/mustakshif"
 #define ProjectRoot AddBackslash(SourcePath) + ".."
 
 #ifndef ReleaseDir
@@ -21,23 +21,23 @@ AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL=https://www.linkedin.com/in/alfaifi-sultan/
 AppUpdatesURL={#AppURL}
-DefaultDirName={localappdata}\Programs\AlfaifiModelAdvisor
+DefaultDirName={localappdata}\Programs\Mustakshif
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir={#OutputDir}
-OutputBaseFilename=AlfaifiModelAdvisor-Setup-{#AppVersion}
-SetupIconFile={#ProjectRoot}\assets\alfaifi.ico
-UninstallDisplayIcon={app}\alfaifi.exe
+OutputBaseFilename=Mustakshif-Setup-{#AppVersion}
+SetupIconFile={#ProjectRoot}\assets\mustakshif.ico
+UninstallDisplayIcon={app}\Mustakshif.exe
 LicenseFile={#ReleaseDir}\LICENSE
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 ChangesEnvironment=yes
 CloseApplications=no
-VersionInfoVersion=0.2.0.0
+VersionInfoVersion=0.4.0.0
 VersionInfoCompany={#AppPublisher}
 VersionInfoDescription={#AppName} installer
 VersionInfoCopyright=Copyright (c) 2026 Sultan Alfaifi. Licensed under Apache-2.0.
@@ -45,20 +45,21 @@ VersionInfoProductName={#AppName}
 VersionInfoProductVersion={#AppVersion}
 
 [Files]
-Source: "{#ReleaseDir}\alfaifi.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ReleaseDir}\alfaifi.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ReleaseDir}\Mustakshif.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ReleaseDir}\mustakshif.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ReleaseDir}\cli\mustakshif.exe"; DestDir: "{app}\cli"; Flags: ignoreversion
 Source: "{#ReleaseDir}\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}\NOTICE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ReleaseDir}\TRADEMARKS.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Alfaifi Model Advisor"; Filename: "{app}\alfaifi.exe"; WorkingDir: "{app}"; IconFilename: "{app}\alfaifi.ico"
+Name: "{group}\Mustakshif"; Filename: "{app}\Mustakshif.exe"; WorkingDir: "{app}"; IconFilename: "{app}\mustakshif.ico"
 Name: "{group}\Documentation"; Filename: "{app}\README.md"
-Name: "{group}\Uninstall Alfaifi Model Advisor"; Filename: "{uninstallexe}"
+Name: "{group}\Uninstall Mustakshif"; Filename: "{uninstallexe}"
 
 [Run]
-Filename: "{app}\alfaifi.exe"; Description: "Launch Alfaifi Model Advisor"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Mustakshif.exe"; Description: "Launch Mustakshif"; Flags: nowait postinstall skipifsilent
 
 [Code]
 function NormalizedPathEntry(Value: String): String;
@@ -155,11 +156,11 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
-    AddUserPath(ExpandConstant('{app}'));
+    AddUserPath(ExpandConstant('{app}\cli'));
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usUninstall then
-    RemoveUserPath(ExpandConstant('{app}'));
+    RemoveUserPath(ExpandConstant('{app}\cli'));
 end;

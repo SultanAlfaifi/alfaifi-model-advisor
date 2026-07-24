@@ -3,9 +3,9 @@ requires = ["setuptools>=70", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "alfaifi-model-advisor"
-version = "0.2.0"
-description = "Trusted local AI model advisor by Sultan Alfaifi"
+name = "mustakshif"
+version = "0.4.0"
+description = "Discover trusted open AI models that fit your device"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
@@ -20,6 +20,7 @@ authors = [
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
+  "Environment :: Win32 (MS Windows)",
   "Intended Audience :: Developers",
   "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python :: 3",
@@ -27,18 +28,25 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+desktop = [
+  "PySide6>=6.8,<7",
+]
 dev = [
   "pyinstaller>=6.21,<7",
+  "PySide6>=6.8,<7",
 ]
 
 [project.urls]
-Homepage = "https://github.com/SultanAlfaifi/alfaifi-model-advisor"
-Repository = "https://github.com/SultanAlfaifi/alfaifi-model-advisor"
-Issues = "https://github.com/SultanAlfaifi/alfaifi-model-advisor/issues"
-Changelog = "https://github.com/SultanAlfaifi/alfaifi-model-advisor/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/SultanAlfaifi/mustakshif"
+Repository = "https://github.com/SultanAlfaifi/mustakshif"
+Issues = "https://github.com/SultanAlfaifi/mustakshif/issues"
+Changelog = "https://github.com/SultanAlfaifi/mustakshif/blob/main/CHANGELOG.md"
 
 [project.scripts]
-alfaifi = "alfaifi_model_advisor.cli:main"
+mustakshif = "mustakshif.cli:main"
+
+[project.gui-scripts]
+mustakshif-desktop = "mustakshif.desktop:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

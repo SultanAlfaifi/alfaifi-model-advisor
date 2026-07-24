@@ -8,7 +8,7 @@ The latest published preview or stable release receives security fixes.
 
 Please do not disclose a suspected vulnerability in a public issue before a fix
 is available. Use the repository's private
-[GitHub Security Advisory](https://github.com/SultanAlfaifi/alfaifi-model-advisor/security/advisories/new)
+[GitHub Security Advisory](https://github.com/SultanAlfaifi/mustakshif/security/advisories/new)
 reporting flow. If that form is unavailable, contact Sultan Alfaifi through:
 
 - X: https://x.com/SultAlfaifi

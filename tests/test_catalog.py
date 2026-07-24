@@ -1,9 +1,11 @@
+import json
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
-from alfaifi_model_advisor.catalog import CatalogService, parse_library_profiles, parse_ollama_tags
-from alfaifi_model_advisor.profiles import build_candidate_from_profile, seed_catalog
+from mustakshif.catalog import CatalogService, parse_library_profiles, parse_ollama_tags
+from mustakshif.profiles import build_candidate_from_profile, discovered_profile, seed_catalog
 
 
 SAMPLE_PAGE = """
@@ -28,6 +30,9 @@ SAMPLE_LIBRARY = """
     <span class="badge">1.5b</span>
     <span class="badge">7b</span>
   </div>
+  <span>1.2M</span><span class="hidden sm:flex">&nbsp;Pulls</span>
+  <span>14</span><span class="hidden sm:flex">&nbsp;Tags</span>
+  <span class="flex items-center" title="July 20, 2026 1:00 PM UTC">Updated</span>
 </a>
 """
 
@@ -41,7 +46,18 @@ SAMPLE_DYNAMIC_TAGS = """
 
 class CatalogTests(unittest.TestCase):
     def test_official_page_parser_keeps_only_canonical_trusted_tag(self):
-        models = parse_ollama_tags("qwen3.5", SAMPLE_PAGE, "2026-07-22T00:00:00+00:00")
+        profile = discovered_profile(
+            "qwen3.5",
+            "A multilingual model with tools and thinking.",
+            {"vision", "tools", "thinking", "9b"},
+        )
+        self.assertIsNotNone(profile)
+        models = parse_ollama_tags(
+            "qwen3.5",
+            SAMPLE_PAGE,
+            "2026-07-22T00:00:00+00:00",
+            profile,
+        )
         self.assertEqual([model.id for model in models], ["qwen3.5:9b"])
         self.assertEqual(models[0].size_gb, 6.6)
         self.assertEqual(models[0].context_k, 256)
@@ -53,7 +69,7 @@ class CatalogTests(unittest.TestCase):
             models = service.load(offline=True)
         self.assertGreaterEqual(len(models), 10)
         self.assertTrue(all(model.trusted for model in models))
-        self.assertEqual(service.source_state, "seed")
+        self.assertIn(service.source_state, {"bundled", "seed"})
 
     def test_library_parser_discovers_unknown_official_family(self):
         profiles, discovered = parse_library_profiles(SAMPLE_LIBRARY)
@@ -64,6 +80,9 @@ class CatalogTests(unittest.TestCase):
         self.assertIn("tools", profile.capabilities)
         self.assertIn("coding", profile.capabilities)
         self.assertEqual(profile.parameter_map["1.5b"], (1.5, None))
+        self.assertEqual(profile.pulls, 1_200_000)
+        self.assertEqual(profile.tag_count, 14)
+        self.assertEqual(profile.updated_at, "July 20, 2026 1:00 PM UTC")
 
         models = parse_ollama_tags(
             profile.family,
@@ -92,6 +111,68 @@ class CatalogTests(unittest.TestCase):
     def test_seed_ids_are_unique(self):
         ids = [model.id for model in seed_catalog()]
         self.assertEqual(len(ids), len(set(ids)))
+
+    def test_publishers_use_identical_metadata_scoring_rules(self):
+        badges = {"vision", "tools", "thinking", "9b"}
+        description = "A multilingual model for agentic coding and document reasoning."
+        qwen = discovered_profile("qwen-example", description, badges)
+        other = discovered_profile("example-labs", description, badges)
+        self.assertEqual(qwen.task_scores, other.task_scores)
+        self.assertEqual(qwen.language_scores, other.language_scores)
+
+    def test_small_remote_index_is_downloaded_and_cached_automatically(self):
+        seed = seed_catalog()[:2]
+
+        class IndexedCatalog(CatalogService):
+            def _read_remote_index(self):
+                return seed, datetime.now(timezone.utc), 233, 210
+
+        with tempfile.TemporaryDirectory() as directory:
+            cache = Path(directory) / "catalog.json"
+            service = IndexedCatalog(cache_path=cache)
+            models = service.load()
+            self.assertTrue(cache.exists())
+        self.assertEqual(models, seed)
+        self.assertEqual(service.source_state, "index")
+        self.assertEqual(service.discovered_family_count, 233)
+        self.assertEqual(service.verified_family_count, 210)
+
+    def test_bundled_catalog_is_large_unique_and_official(self):
+        payload = json.loads(Path("data/catalog.json").read_text(encoding="utf-8"))
+        models, checked, discovered, verified = CatalogService._payload_models(payload, "bundled")
+        ids = [model.id for model in models]
+        self.assertIsNotNone(checked)
+        self.assertGreaterEqual(discovered, 150)
+        self.assertGreaterEqual(verified, 150)
+        self.assertGreaterEqual(len(models), 300)
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertIn("qwen3.6:27b", ids)
+        self.assertTrue(all(model.official_url == f"https://ollama.com/library/{model.id}" for model in models))
+
+    def test_downloaded_index_is_sanitized_before_use(self):
+        safe = seed_catalog()[0].to_dict()
+        safe["install_command"] = "powershell -Command evil"
+        safe["publisher_url"] = "http://untrusted.invalid"
+        payload = {
+            "version": 3,
+            "checked_at": "2026-07-24T00:00:00+00:00",
+            "models": [safe],
+        }
+        models, *_ = CatalogService._payload_models(payload, "index")
+        self.assertEqual(len(models), 1)
+        self.assertEqual(models[0].install_command, f"ollama pull {models[0].id}")
+        self.assertEqual(models[0].publisher_url, f"https://ollama.com/library/{models[0].family}")
+
+        safe["official_url"] = "https://evil.invalid/model"
+        payload["models"] = [safe]
+        rejected, *_ = CatalogService._payload_models(payload, "index")
+        self.assertEqual(rejected, [])
+
+        safe["official_url"] = f"https://ollama.com/library/{safe['id']}"
+        safe["size_gb"] = "not-a-number"
+        payload["models"] = [safe]
+        rejected, *_ = CatalogService._payload_models(payload, "index")
+        self.assertEqual(rejected, [])
 
 
 if __name__ == "__main__":

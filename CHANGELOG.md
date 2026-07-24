@@ -1,15 +1,40 @@
 # Changelog
 
-All notable changes to Alfaifi Model Advisor are documented in this file.
+All notable changes to Mustakshif are documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-24
+
 ### Added
 
+- Native Mustakshif Desktop application with device scanning, preference
+  interview, live discovery progress, result cards, official links, copyable
+  install commands, and approval-gated Ollama installation.
+- Shared application service used by the desktop and CLI surfaces.
+- Refined vector-first Mustakshif visual identity and bilingual Arabic/English
+  application experience.
+- Daily GitHub Actions catalog builder covering every runnable family exposed by
+  the official Ollama library.
+- Trusted automatic index download, 24-hour cache, and catalog bundled into the
+  Windows executables for offline use.
+- Five diverse recommendation categories: best overall, best quality, fastest,
+  lightest, and most popular compatible option.
 - Detailed recommendation methodology covering discovery, compatibility
   filters, memory estimates, score weights, confidence, and limitations.
+
+### Changed
+
+- Renamed the project, Python package, Windows application, and primary command
+  from Alfaifi Model Advisor / `alfaifi` to Mustakshif / `mustakshif`.
+- Replaced publisher-specific profiles with identical metadata inference and
+  scoring rules for every official model family.
+- Added official Ollama pulls as a capped 5-point adoption signal and catalog
+  freshness as a capped 5-point signal.
+- Added a 10% VRAM safety margin before declaring full-GPU compatibility.
+- Removed the legacy `alfaifi` package, command, assets, and installer entries.
 
 ## [0.2.0] - 2026-07-22
 
@@ -43,6 +68,7 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Graphical per-user Windows installer and portable release package.
 - Apache-2.0 source license and independent trademark policy.
 
-[Unreleased]: https://github.com/SultanAlfaifi/alfaifi-model-advisor/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/SultanAlfaifi/alfaifi-model-advisor/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/SultanAlfaifi/alfaifi-model-advisor/releases/tag/v0.1.0
+[Unreleased]: https://github.com/SultanAlfaifi/mustakshif/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/SultanAlfaifi/mustakshif/compare/v0.2.0...v0.4.0
+[0.2.0]: https://github.com/SultanAlfaifi/mustakshif/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/SultanAlfaifi/mustakshif/releases/tag/v0.1.0

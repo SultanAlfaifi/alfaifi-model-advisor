@@ -1,9 +1,9 @@
 import unittest
 
-from alfaifi_model_advisor.models import GpuInfo, HardwareProfile, OllamaInfo, UserNeeds
-from alfaifi_model_advisor.catalog import parse_library_profiles
-from alfaifi_model_advisor.profiles import build_candidate_from_profile, seed_catalog
-from alfaifi_model_advisor.recommender import RecommendationEngine
+from mustakshif.models import GpuInfo, HardwareProfile, OllamaInfo, UserNeeds
+from mustakshif.catalog import parse_library_profiles
+from mustakshif.profiles import build_candidate_from_profile, discovered_profile, seed_catalog
+from mustakshif.recommender import RecommendationEngine
 
 
 def hardware(ram: float, vram: float = 0, disk: float = 200) -> HardwareProfile:
@@ -62,11 +62,12 @@ class RecommenderTests(unittest.TestCase):
         self.assertLessEqual(results[0].model.size_gb or 999, 2.7)
         self.assertEqual(results[0].model.runtime, "local")
 
-    def test_rtx_4060_class_device_prefers_qwen_9b_for_bilingual_general_use(self):
-        results, _ = self.engine.recommend(self.models, hardware(32, 8), needs())
+    def test_vram_safety_margin_marks_borderline_model_as_hybrid(self):
+        qwen = next(model for model in self.models if model.id == "qwen3.5:9b")
+        results, _ = self.engine.recommend([qwen], hardware(32, 8), needs())
         self.assertTrue(results)
-        self.assertEqual(results[0].model.id, "qwen3.5:9b")
-        self.assertEqual(results[0].hardware_mode, "full_gpu")
+        self.assertEqual(results[0].hardware_mode, "hybrid")
+        self.assertTrue(any("10% safety margin" in warning for warning in results[0].warnings))
 
     def test_local_only_excludes_kimi_cloud(self):
         results, _ = self.engine.recommend(
@@ -119,6 +120,65 @@ class RecommenderTests(unittest.TestCase):
         )
         self.assertEqual(results, [])
         self.assertEqual(excluded[0][1], "The license does not match the selected preference")
+
+    def test_identical_metadata_produces_identical_scores_across_publishers(self):
+        description = "A multilingual model for agentic coding and reasoning."
+        badges = {"tools", "thinking", "8b"}
+        first = discovered_profile(
+            "qwen-example",
+            description,
+            badges,
+            pulls=100_000,
+            updated_at="July 20, 2026 1:00 PM UTC",
+        )
+        second = discovered_profile(
+            "independent-example",
+            description,
+            badges,
+            pulls=100_000,
+            updated_at="July 20, 2026 1:00 PM UTC",
+        )
+        models = [
+            build_candidate_from_profile(profile, "8b", 5.0, 32, "local", source_state="live")
+            for profile in (first, second)
+        ]
+        results, _ = self.engine.recommend(models, hardware(32, 12), needs(), limit=2)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].score, results[1].score)
+
+    def test_shortlist_is_diverse_across_families(self):
+        results, _ = self.engine.recommend(self.models, hardware(32, 8), needs(), limit=5)
+        families = [item.model.family for item in results]
+        self.assertEqual(len(families), len(set(families)))
+        self.assertEqual(
+            [item.category for item in results],
+            ["best_overall", "best_quality", "fastest", "lightest", "most_popular"],
+        )
+
+    def test_community_popularity_is_capped_at_five_points(self):
+        profile_a = discovered_profile(
+            "model-a",
+            "A general multilingual model.",
+            {"7b"},
+            pulls=0,
+            updated_at="July 20, 2026 1:00 PM UTC",
+        )
+        profile_b = discovered_profile(
+            "model-b",
+            "A general multilingual model.",
+            {"7b"},
+            pulls=10_000_000,
+            updated_at="July 20, 2026 1:00 PM UTC",
+        )
+        models = [
+            build_candidate_from_profile(profile, "7b", 4.5, 32, "local", source_state="live")
+            for profile in (profile_a, profile_b)
+        ]
+        results, _ = self.engine.recommend(models, hardware(32, 12), needs(), limit=2)
+        by_id = {item.model.id: item for item in results}
+        difference = by_id["model-b:7b"].score - by_id["model-a:7b"].score
+        self.assertGreater(difference, 0)
+        self.assertLessEqual(difference, 5.0)
 
 
 if __name__ == "__main__":

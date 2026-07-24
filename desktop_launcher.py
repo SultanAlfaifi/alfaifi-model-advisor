@@ -1,4 +1,4 @@
-from mustakshif.cli import main
+from mustakshif.desktop import main
 
 
 if __name__ == "__main__":

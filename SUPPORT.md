@@ -5,12 +5,12 @@
 Search existing GitHub issues before opening a new one. If the problem has not
 been reported, open an issue and include:
 
-- Alfaifi Model Advisor version.
+- Mustakshif version.
 - Windows version.
 - Ollama version, if installed.
 - The exact command you ran.
 - The complete error message with secrets and personal paths removed.
-- Whether `alfaifi --offline` works.
+- Whether `mustakshif --offline` works.
 
 Do not post secrets, private hardware inventories, tokens, or personal data.
 

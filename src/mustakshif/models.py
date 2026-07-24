@@ -60,6 +60,12 @@ class ModelCandidate:
     official_url: str
     publisher_url: str
     install_command: str | None
+    description: str = ""
+    pulls: int = 0
+    tag_count: int = 0
+    family_updated_at: str | None = None
+    benchmark_score: float | None = None
+    benchmark_source: str | None = None
     trusted: bool = True
     source_state: str = "seed"
     last_checked: str | None = None
@@ -97,6 +103,8 @@ class Recommendation:
     estimated_memory_gb: float | None
     reasons: list[str]
     warnings: list[str]
+    category: str = "best_overall"
+    score_breakdown: dict[str, float] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)

@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping improve Alfaifi Model Advisor.
+Thank you for helping improve Mustakshif.
 
 ## Good contribution areas
 

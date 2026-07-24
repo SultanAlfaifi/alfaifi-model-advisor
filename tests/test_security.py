@@ -1,7 +1,7 @@
 import unittest
 
-from alfaifi_model_advisor.installer import safe_official_url, validate_installable
-from alfaifi_model_advisor.profiles import seed_catalog
+from mustakshif.installer import safe_official_url, validate_installable
+from mustakshif.profiles import seed_catalog
 
 
 class SecurityTests(unittest.TestCase):

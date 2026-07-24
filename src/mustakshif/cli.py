@@ -16,10 +16,18 @@ from .recommender import RecommendationEngine
 from .ui import AppUI
 
 
+def _configure_stdio() -> None:
+    """Keep JSON and model metadata printable in legacy Windows terminals."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="alfaifi",
-        description="Alfaifi Model Advisor — trusted open AI model recommendations",
+        prog="mustakshif",
+        description="Mustakshif — discover trusted open AI models that fit your device",
     )
     parser.add_argument("--offline", action="store_true", help="Use cached model data without network access")
     parser.add_argument("--json", action="store_true", help="Produce JSON when supported by the command")
@@ -62,6 +70,7 @@ def _scan(inspector: HardwareInspector, ui: AppUI, json_output: bool):
 
 
 def main(argv: list[str] | None = None) -> int:
+    _configure_stdio()
     args = _parser().parse_args(argv)
     console = Console(highlight=False)
     ui = AppUI(console)
@@ -100,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             ui.show_model_list(models)
             ui.footer()
-            return 0 if catalog.source_state in {"live", "cache"} else 2
+            return 0 if catalog.source_state in {"live", "index", "cache", "bundled"} else 2
 
         if args.command == "list":
             models = catalog.load(offline=args.offline)
@@ -171,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             with ui.discovery_wait() as progress:
                 models = catalog.load(
-                    force_refresh=True,
+                    force_refresh=False,
                     needs=needs,
                     hardware=hardware,
                     progress=progress,
